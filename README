@@ -14,7 +14,8 @@ DropTargets
 Snapping to Grid
 Connections and Ports
 
-It was developed largely  on pyOpenGL, however the  Javascript version is being released first. PyOpenGL version is being reworked. A C++ versioin for OpenGL on SDL will also be available.
+It was developed largely  on pyOpenGL, however the  Javascript version is being released first. PyOpenGL version is being reworked. 
+A C++ version for OpenGL on SDL will also be available.
 
 
 Still a work in progress, but interesting nevertheless.
