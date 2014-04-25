@@ -1,0 +1,22 @@
+Snippets for developing Natural UI on various platforms.
+
+Currently the following are available when using with Snap.Svg.
+
+Panning
+Zooming
+Selection
+Dragging
+
+In the works :
+
+Multi Selection
+DropTargets
+Snapping to Grid
+Connections and Ports
+
+It was developed largely  on pyOpenGL, however the  Javascript version is being released first. PyOpenGL version is being reworked. A C++ versioin for OpenGL on SDL will also be available.
+
+
+Still a work in progress, but interesting nevertheless.
+
+If you are looking for a full form, "Natural I/O By Interacting with User and the Medium".
