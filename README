@@ -13,6 +13,8 @@ Multi Selection
 DropTargets
 Snapping to Grid
 Connections and Ports
+Multi Touch
+Support for Leap Motion
 
 It was developed largely  on pyOpenGL, however the  Javascript version is being released first. PyOpenGL version is being reworked. 
 A C++ version for OpenGL on SDL will also be available.
