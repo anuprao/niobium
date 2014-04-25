@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Snappy</title>
+		
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<link rel="stylesheet" href="static/bootstrap/css/bootstrap.css" />
+		
+		<script type="text/javascript" src="static/jquery/jquery-1.10.2.js" ></script>
+		
+		<script type="text/javascript" src="static/snap/snap.svg.js" charset="utf-8"></script>
+		
+		<script type="text/javascript" src="static/snap/myzoom.js" charset="utf-8"></script>
+		
+		<script type="text/javascript" src="static/bootstrap/js/bootstrap.js"></script>
+		
+		<style>
+			.container-fluid {
+				background-color : #404040;
+			}
+		</style>
+				
+	</head>
+	<body>
+		<noscript><h3>This page requires Javascript!</h3></noscript>
+		
+		<script language="javascript" type="text/javascript">
+			
+			var svgElement = null; 
+			var paper = null;	
+							
+			var gridSizeX = 80;
+			var gridSizeY = 60;
+			
+			var orig = {
+				x: 0,
+				y: 0
+			};	
+			var trackPos = {
+				x: 0,
+				y: 0
+			};			
+			
+			var dragImage = null;	
+
+			function onStart(x, y, e) {
+				var thisBox = this.getBBox();
+				
+				orig.x = thisBox.x;
+				orig.y = thisBox.y;
+				
+				// add dragImage
+				
+				dragImage = paper.rect(thisBox.x, thisBox.y, 80, 60, 7);
+				dragImage.attr({
+					fill:"none",
+					stroke:"#F0F0F0",
+					strokeDasharray: "5, 5",
+					strokeWidth:"2",
+					});
+				
+				trackPos.x = thisBox.x;
+				trackPos.y = thisBox.y;
+			}
+							
+			function onMove(dx, dy, x, y, e) {		
+				var xdir = 1;
+				if(dx<0)
+					xdir=-1;
+				
+				var ydir = 1;
+				if(dy<0)
+					ydir=-1;
+									
+				var xSnap = Snap.snapTo(gridSizeX, dx + xdir*gridSizeX/2, 100000000);
+				var ySnap = Snap.snapTo(gridSizeY, dy + ydir*gridSizeY/2, 100000000);
+				
+				var track_xSnap = Snap.snapTo(gridSizeX, orig.x + dx + gridSizeX/2, 100000000);
+				var track_ySnap = Snap.snapTo(gridSizeY, orig.y + dy + gridSizeY/2, 100000000);
+				
+				dragImage.transform('t'+xSnap+', '+ySnap);
+				
+				trackPos.x = track_xSnap;
+				trackPos.y = track_ySnap;				
+			}
+						
+			function onEnd(x, y, e) {			
+				//this.transform('t'+trackPos.x+', '+trackPos.y);
+				
+				this.animate({
+					transform:'t' + trackPos.x + ', ' + trackPos.y 
+					}, 100, mina.linear);
+									
+				// remove dragImage
+				dragImage.remove();
+			}
+									
+			function runProgram() {
+				svgContainer = document.getElementById("mycontainer");
+				var mywidth = svgContainer.offsetWidth;
+				var myheight = svgContainer.offsetHeight;
+				
+				svgElement = document.getElementById("svgsurface"); 
+				
+				paper = Snap(svgElement);
+				paper.attr({
+					viewBox: "0 0 " + mywidth + " " + myheight,
+					});	
+				
+				//var layoutSpace = paper.rect(0, 0, 800, 600, 7);
+				//layoutSpace.attr({
+				//	fill:"#0088EE",
+				//	stroke:"none",
+				//	});
+										
+				//paper.zoomable();
+				//paper.panable();		
+				paper.initMyZoom(mywidth, myheight);
+				
+				for(var iCnt=0; iCnt<2; iCnt++) {
+					var brick = paper.rect(0, 0, 80, 60, 7);
+					brick.attr({
+						fill:"#BADA55",
+						stroke:"#ABC944",
+						strokeWidth:"2",
+						});
+					
+					var hb = paper.circle(70, 50, 7);
+					hb.attr({
+						fill:"#FFFFFF",
+						"fill-opacity":"0.4",
+						stroke:"#FFFFFF",
+						"stroke-opacity":"1.0",
+						strokeWidth: "2",
+						});
+										
+					var tile = paper.group(brick, hb);
+					
+					//tile.animate({
+					//	transform:'r90, 40, 30'
+					//	}, 1000);
+						
+					//tile.drag();
+									
+					//var myMatrix = new Snap.Matrix();
+					//myMatrix.rotate(90, 140, 130);
+					//
+					//tile.animate({
+					//	transform:myMatrix
+					//	}, 10000, mina.linear);
+					
+					var tMat = new Snap.Matrix();
+					//tMat.translate(-40 + 0, -30 + iCnt*60);
+					tMat.translate(100 + 0, 100 + iCnt*120);
+					tile.transform(tMat);
+					
+					//tile.drag(onMove, onStart, onEnd);
+					makeDraggable(tile);
+				}
+			}
+		</script>
+		
+		<div class="navbar navbar-default">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand">Snappy</a>
+			</div>
+			
+			<div class="control-group">
+				<div class="controls">
+					<button type="button" class="btn btn-primary" onclick="javascript:runProgram();">Run</button>
+				</div>
+			</div>
+			
+			
+			<div class="navbar-collapse collapse navbar-responsive-collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li id="zoom">zoom = ?</li>
+					<li id="cursorX">cursorX = ?</li>
+					<li id="cursorY">cursorY = ?</li>
+					<!--					
+					<li id="old_width">old_width = ?</li>
+					<li id="old_height">old_height = ?</li>
+					<li id="new_width">new_width = ?</li>
+					<li id="new_height">new_height = ?</li>
+					<li id="cleft">cleft = ?</li>
+					<li id="cright">cright = ?</li>
+					<li id="ctop">ctop = ?</li>
+					<li id="cbottom">cbottom = ?</li>
+					<li id="tx">tx = ?</li>
+					<li id="ty">ty = ?</li>
+					-->
+				</ul>
+			</div>
+			
+			
+		</div>
+				
+		<div id="mycontainer" class="container-fluid">
+			<svg id="svgsurface" style="width: 100%; height: 100%"></svg>
+		</div>
+				
+	</body>
+</html>
