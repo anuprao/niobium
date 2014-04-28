@@ -337,6 +337,8 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 	var ctop = 1.0;
 	var cbottom = 1.0;
 	
+	var viewport;
+	
 	//
 	
 	var bCTRLpressed = false;
@@ -347,7 +349,7 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 		
 	//
 
-	function printInfo (node) {
+	function printInfo () {
 		document.getElementById("zoom").innerHTML= "<a>zoom =" + m_ZoomObj.zoomlevel.toFixed(4) + "</a>";
 		document.getElementById("cursorX").innerHTML= "<a>cursorX =" + cursorX.toFixed(4) + "</a>";
 		document.getElementById("cursorY").innerHTML= "<a>cursorY =" + cursorY.toFixed(4) + "</a>";
@@ -365,7 +367,7 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 		*/
 	}
 	
-	function applyExtents (node) {	
+	function applyExtents () {	
 		var strVB;
 		
 		if(false == m_PanObj.isUnderPan())
@@ -375,9 +377,9 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 			strVB = m_PanObj.panDropLeft + " " + m_PanObj.panDropTop + " " + (m_PanObj.panDropRight-m_PanObj.panDropLeft) + " " + (m_PanObj.panDropBottom-m_PanObj.panDropTop);
 		}
 			
-		node.setAttribute("viewBox", strVB);
+		viewport.setAttribute("viewBox", strVB);
 		
-		printInfo(node);
+		printInfo();
 	}
 			
 	function setCursorVirtualLoc(lx, ly, ex, ey) {
@@ -425,14 +427,14 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 				if (true == m_PanObj.isUnderPan()) {
 					updatePanExtents(lx, ly);
 					
-					applyExtents(e.target);
+					applyExtents();
 				}
 				
 				if (true == m_SelObj.isUnderDrag()) { 
 					m_SelObj.setDropLocation(lx, ly);					
 				}	
 				
-				printInfo(e.target);	
+				printInfo();	
 			//}
 		//}
 	}
@@ -490,7 +492,7 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 						m_PanObj.startPan(cleft, cright, ctop, cbottom, lx, ly);
 						setCursorVirtualLoc(lx, ly, ex, ey);
 						
-						applyExtents(e.target);
+						applyExtents();
 					}
 				}	
 			//}
@@ -532,7 +534,7 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 					cbottom = b;
 					ctop = t;
 					
-					applyExtents(e.target);
+					applyExtents();
 				}
 			//}
 		//}			
@@ -560,26 +562,28 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 				var ly = localPts[1];
 				cursorX = lx;
 				cursorY = ly;				
-				
+		
 				if (delta > 0) {
 					m_ZoomObj.increaseZoomlevel();
+					
 					var size = m_ZoomObj.recalculateVirtualSize(m_w, m_h);
 					currVirtualWidth = size[0];
 					currVirtualHeight = size[1];
 					
 					setCursorVirtualLoc(lx, ly, ex, ey);
 					
-					applyExtents(e.target);
+					applyExtents();
 					
 				} else if (delta < 0) {
 					m_ZoomObj.decreaseZoomlevel();
+					
 					var size = m_ZoomObj.recalculateVirtualSize(m_w, m_h);
 					currVirtualWidth = size[0];
 					currVirtualHeight = size[1];
 					
 					setCursorVirtualLoc(lx, ly, ex, ey);
 					
-					applyExtents(e.target);
+					applyExtents();
 				}
 			//}
 		//}
@@ -625,12 +629,18 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 		node.addEventListener('mouseup', handleMouseUp, false);
 			
 		// register Mouse Wheel Handler
-		if (navigator.userAgent.toLowerCase().indexOf('webkit') >= 0) {
-			node.addEventListener('mousewheel', handleMouseWheel, false);
-		} else {
-			node.addEventListener('DOMMouseScroll', handleMouseWheel, false);
-		}
+		//if (navigator.userAgent.toLowerCase().indexOf('webkit') >= 0) {
+		//	node.addEventListener('mousewheel', handleMouseWheel, false);
+		//} else {
+		//	node.addEventListener('DOMMouseScroll', handleMouseWheel, false);
+		//}
 		
+		if( (/Firefox/i.test(navigator.userAgent)) ) {
+			node.addEventListener("DOMMouseScroll", handleMouseWheel, false);
+		} else {
+			node.addEventListener("mousewheel", handleMouseWheel, false);
+		}
+
 		// WARNING: IE?
 	}
 	
@@ -654,8 +664,8 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 		cursorY = m_h/2	;	
 		setCursorVirtualLoc(cursorX, cursorY, cursorX, cursorY);
 		
-		var viewport = this.node;
+		viewport = this.node;
 		registerHandlers(viewport);
-		applyExtents(viewport);
+		applyExtents();
 	}	
 });
