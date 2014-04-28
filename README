@@ -6,20 +6,24 @@ Panning
 Zooming
 Selection
 Dragging
+Multi Selection
 
 In the works :
 
-Multi Selection
-DropTargets
-Snapping to Grid
-Connections and Ports
+Drag and Drop
 Multi Touch
+Snap to Grid
+Snap to Edge
+Snap to Point
+Connections and Ports
 Support for Leap Motion
 
-It was developed largely  on pyOpenGL, however the  Javascript version is being released first. PyOpenGL version is being reworked. 
-A C++ version for OpenGL on SDL will also be available.
+It was developed largely  on pyOpenGL, however the 
+Javascript version is being released first. 
+
+pyOpenGL version is being reworked and the core will also 
+work with pyCairo. 
+
+A C++ version for OpenGL on SDL will also be made available.
 
 
-Still a work in progress, but interesting nevertheless.
-
-If you are looking for a full form, "Natural I/O By Interacting with User and the Medium".
