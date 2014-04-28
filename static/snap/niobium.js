@@ -585,9 +585,41 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 		//}
 	}	
 	
+	function handleKeyDown (e) {
+		//
+		switch(e.keyCode)
+		{
+			case 17: 
+			{
+				bCTRLpressed = true;
+			}
+			break;
+		}
+	}
+
+	function handleKeyUp (e) {
+		//
+		switch(e.keyCode)
+		{
+			case 17: 
+			{
+				bCTRLpressed = false;
+			}
+			break;
+		}		
+	}
+	
+	function handleKeyPress (e) {
+		//
+	}
+	
 	//
 	
 	function registerHandlers(node) {
+		window.addEventListener("keydown", handleKeyDown, false);
+		window.addEventListener("keypress", handleKeyPress, false);
+		window.addEventListener("keyup", handleKeyUp, false);
+				
 		node.addEventListener('mousedown', handleMouseDown, false);		
 		node.addEventListener('mousemove', handleMouseMove, false);
 		node.addEventListener('mouseup', handleMouseUp, false);
