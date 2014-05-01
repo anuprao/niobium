@@ -1,5 +1,44 @@
 /// DRAGGING
 
+function dragdropmanager() {
+	
+}	
+	
+	onlyInstance = None
+	
+	def __init__(self):
+		self.isEmpty = True
+		self.dropSrc = None
+		self.dropObj = None
+		
+	@staticmethod
+	def getInstance():
+		if None == dragdropmanager.onlyInstance:
+			dragdropmanager.onlyInstance = dragdropmanager()
+		return dragdropmanager.onlyInstance
+		
+	def attachObject(self, dropSrc, dropObj):
+		
+		dropObj.show(False)
+		
+		self.dropSrc = dropSrc
+		self.dropObj = dropObj
+		self.isEmpty = False
+		
+		//enableMouseMotion()
+	
+	def clearOnDrop(self):
+		self.isEmpty = True
+		self.dropSrc = None
+		self.dropObj = None
+		
+		//disableMouseMotion()
+		
+	def setPosForDrop(self, lx, ly):
+		self.dropObj.setPosForDrop(lx-self.dropObj.dragpad_OffX, ly-self.dropObj.dragpad_OffY)
+			
+/// DRAGGING
+
 function draggable(item) {
 	this.bDragging = false;
 	
@@ -377,6 +416,11 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 			strVB = m_PanObj.panDropLeft + " " + m_PanObj.panDropTop + " " + (m_PanObj.panDropRight-m_PanObj.panDropLeft) + " " + (m_PanObj.panDropBottom-m_PanObj.panDropTop);
 		}
 			
+		dm = dragdropmanager.getInstance()
+		if None != dm:
+			if False == dm.isEmpty :		
+				dm.dropObj.redraw()
+								
 		viewport.setAttribute("viewBox", strVB);
 		
 		printInfo();
@@ -424,6 +468,15 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 				cursorX = lx;
 				cursorY = ly;				
 				
+				dm = dragdropmanager.getInstance()
+				if None != dm:
+					if False == dm.isEmpty :
+						#print "carrying"
+						if DND_NODE == dm.dropObj.dndType or DND_CONNECTION == dm.dropObj.dndType:
+							dm.setPosForDrop(lx, ly)
+							dm.dropObj.show(True)
+							bUpdate = True
+											
 				if (true == m_PanObj.isUnderPan()) {
 					updatePanExtents(lx, ly);
 					
@@ -518,6 +571,15 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 				var lx = localPts[0];
 				var ly = localPts[1];
 				
+				dm = dragdropmanager.getInstance()
+				if None != dm:
+					if False == dm.isEmpty :
+						if DND_NODE == dm.dropObj.dndType or DND_CONNECTION == dm.dropObj.dndType:
+							dm.setPosForDrop(lx, ly)
+							bTmpUpdate = self.acceptDropAt(dm.dropSrc, dm.dropObj)
+							dm.clearOnDrop()
+							bUpdate = bTmpUpdate
+											
 				if (true == m_SelObj.isUnderDrag()) {
 					bTmpUpdate = m_SelObj.stopDrag();
 				} else if (true == m_PanObj.isUnderPan()) {		
