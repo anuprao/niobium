@@ -1,44 +1,5 @@
 /// DRAGGING
 
-function dragdropmanager() {
-	
-}	
-	
-	onlyInstance = None
-	
-	def __init__(self):
-		self.isEmpty = True
-		self.dropSrc = None
-		self.dropObj = None
-		
-	@staticmethod
-	def getInstance():
-		if None == dragdropmanager.onlyInstance:
-			dragdropmanager.onlyInstance = dragdropmanager()
-		return dragdropmanager.onlyInstance
-		
-	def attachObject(self, dropSrc, dropObj):
-		
-		dropObj.show(False)
-		
-		self.dropSrc = dropSrc
-		self.dropObj = dropObj
-		self.isEmpty = False
-		
-		//enableMouseMotion()
-	
-	def clearOnDrop(self):
-		self.isEmpty = True
-		self.dropSrc = None
-		self.dropObj = None
-		
-		//disableMouseMotion()
-		
-	def setPosForDrop(self, lx, ly):
-		self.dropObj.setPosForDrop(lx-self.dropObj.dragpad_OffX, ly-self.dropObj.dragpad_OffY)
-			
-/// DRAGGING
-
 function draggable(item) {
 	this.bDragging = false;
 	
@@ -155,14 +116,14 @@ selection.prototype.containsPoint = function (lx, ly) {
 selection.prototype.setDropLocation = function (mx, my) {
 	for (var index in this.arrItems) {
 		item = this.arrItems[index];
-		item.m_dragObj.setDropLocation(mx, my);
+		item.m_widget.m_dragObj.setDropLocation(mx, my);
 	}
 }
 	
 selection.prototype.startDrag = function (mx, my) {
 	for (var index in this.arrItems) {
 		item = this.arrItems[index];
-		item.m_dragObj.startDrag(mx, my);
+		item.m_widget.m_dragObj.startDrag(mx, my);
 	}
 	
 	//enableMouseMotion();
@@ -173,7 +134,7 @@ selection.prototype.stopDrag = function () {
 	
 	for (var index in this.arrItems) {
 		item = this.arrItems[index];
-		bReturn = bReturn || item.m_dragObj.stopDrag();
+		bReturn = bReturn || item.m_widget.m_dragObj.stopDrag();
 	}
 		
 	//disableMouseMotion();
@@ -186,7 +147,7 @@ selection.prototype.isUnderDrag = function () {
 	
 	for (var index in this.arrItems) {
 		item = this.arrItems[index];
-		bReturn = bReturn || item.m_dragObj.isUnderDrag();
+		bReturn = bReturn || item.m_widget.m_dragObj.isUnderDrag();
 	}
 	
 	return bReturn;
@@ -346,12 +307,107 @@ zoomable.prototype.decreaseZoomlevel = function () {
 	
 	this.normalizeZoomlevel();
 }
+
+/// WIDGET
+
+function widget(item) {
+	this.item = item;
+	
+	this.dragpad_OffX = 0;
+	this.dragpad_OffY = 0;
+	
+	this.dropX = 0;
+	this.dropY = 0;
+	
+	this.bCanDrop = false;
+	
+	this.m_dragObj = new draggable(this.item);
+}
+
+widget.prototype.setPosForDrop = function (lx, ly) {	
+	this.dropX = lx - this.dragpad_OffX;
+	this.dropY = ly - this.dragpad_OffY;
+}
+
+widget.prototype.setDropState = function (bDropOK) {	
+	this.bDropOK = bDropOK;
+}
+
+widget.prototype.acceptDrop = function () {	
+	var bDropSucceeded = false;
+	
+	return bDropSucceeded;
+}
+
+/// DRAGGING
+
+var dragdropmanager	= ( function() {
+	
+	var onlyInstance = null;
+	
+	function init() {
+		
+		//var privVar = 0;
+		
+		//function privMethod() {
+		//	
+		//};
+		
+		return {
+			isEmpty : true,
+			dropSrc : null,
+			dropObj : null,
+			
+			attachObject : function (dropSrc, dropObj) {
+				//dropObj.show(false);
+				
+				this.dropSrc = dropSrc;
+				this.dropObj = dropObj;
+				this.isEmpty = False;
+				
+				//enableMouseMotion();				
+			},
+			
+			clearOnDrop : function () {
+				
+				//perform callbacks
+				
+				
+				this.isEmpty = true;
+				this.dropSrc = null;
+				this.dropObj = null;
+				
+				//disableMouseMotion();				
+			},			
+			
+			setPosForDrop : function (lx, ly) {
+				this.dropObj.setPosForDrop(lx, ly);
+			},			
+		};
+	};
+	
+	return {
+		getInstance : function () {
+			
+			if( null == onlyInstance)
+			{
+				onlyInstance = init();
+			}
+			return onlyInstance;
+		}		
+	};
+	
+} ) ();
 	
 ///
 
-function makeDraggable(item) {
-	item.m_dragObj = new draggable(item);
-	//item["m_dragObj"] = new draggable();
+//function makeDraggable(item) {
+//	item.m_dragObj = new draggable(item);
+//	//item["m_dragObj"] = new draggable();
+//}
+
+function makeWidget(item) {
+	item.m_widget = new widget(item);
 }
 
 ///
@@ -416,10 +472,12 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 			strVB = m_PanObj.panDropLeft + " " + m_PanObj.panDropTop + " " + (m_PanObj.panDropRight-m_PanObj.panDropLeft) + " " + (m_PanObj.panDropBottom-m_PanObj.panDropTop);
 		}
 			
-		dm = dragdropmanager.getInstance()
-		if None != dm:
-			if False == dm.isEmpty :		
-				dm.dropObj.redraw()
+		//dm = dragdropmanager.getInstance();
+		//if (null != dm) {
+		//	if (false == dm.isEmpty) {
+		//		dm.dropObj.redraw();
+		//	}
+		//}
 								
 		viewport.setAttribute("viewBox", strVB);
 		
@@ -441,7 +499,12 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 		return [mx, my];
 	}
 	
-	///  
+	function checkDrop() {	
+		var bDropAllowed = false;
+		var dropTgt = null;
+		
+		return [bDropAllowed, dropTgt];
+	}
 		
 	function updatePanExtents(mx, my) {
 		m_PanObj.updatePanExtents(mx, my, currVirtualWidth, currVirtualHeight);
@@ -468,14 +531,20 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 				cursorX = lx;
 				cursorY = ly;				
 				
-				dm = dragdropmanager.getInstance()
-				if None != dm:
-					if False == dm.isEmpty :
-						#print "carrying"
-						if DND_NODE == dm.dropObj.dndType or DND_CONNECTION == dm.dropObj.dndType:
-							dm.setPosForDrop(lx, ly)
-							dm.dropObj.show(True)
-							bUpdate = True
+				dm = dragdropmanager.getInstance();
+				if (null != dm) {
+					if (false == dm.isEmpty) {
+						if ((DND_NODE == dm.dropObj.dndType) || (DND_CONNECTION == dm.dropObj.dndType)) {
+							dm.setPosForDrop(lx, ly);
+							
+							var dropInfo = checkDrop();
+							var bDropAllowed = dropInfo[0];
+							var dropTgt = dropInfo[1];
+							
+							dm.dropObj.setDropState(bDropAllowed);
+						}
+					}
+				}
 											
 				if (true == m_PanObj.isUnderPan()) {
 					updatePanExtents(lx, ly);
@@ -523,11 +592,15 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 						
 						// get highest draggable object
 						// WARNING : Needs to be corrected for nested groups
-						if(child.m_dragObj === undefined)
+						if(child.m_widget === undefined)
 						{
 							child = child.parent();
-						}
+						}						
 						
+						if(child.m_widget.m_dragObj === undefined)
+						{
+							child = child.parent();
+						}						
 					}
 					
 					if( null != child ) {
@@ -571,14 +644,25 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 				var lx = localPts[0];
 				var ly = localPts[1];
 				
-				dm = dragdropmanager.getInstance()
-				if None != dm:
-					if False == dm.isEmpty :
-						if DND_NODE == dm.dropObj.dndType or DND_CONNECTION == dm.dropObj.dndType:
-							dm.setPosForDrop(lx, ly)
-							bTmpUpdate = self.acceptDropAt(dm.dropSrc, dm.dropObj)
-							dm.clearOnDrop()
-							bUpdate = bTmpUpdate
+				dm = dragdropmanager.getInstance();
+				if (null != dm) {
+					if (false == dm.isEmpty) {
+						if ((DND_NODE == dm.dropObj.dndType) || (DND_CONNECTION == dm.dropObj.dndType)) {
+							dm.setPosForDrop(lx, ly);
+							
+							var dropInfo = checkDrop();
+							var bDropAllowed = dropInfo[0];
+							var dropTgt = dropInfo[1];
+							
+							dm.dropObj.setDropState(bDropAllowed);
+														
+							var bDropAccepted = dropTgt.acceptDrop();
+							if(true == bDropAccepted) {
+								dm.clearOnDrop();
+							}
+						}
+					}
+				}
 											
 				if (true == m_SelObj.isUnderDrag()) {
 					bTmpUpdate = m_SelObj.stopDrag();
