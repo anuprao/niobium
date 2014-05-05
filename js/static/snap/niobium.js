@@ -398,6 +398,47 @@ var dragdropmanager	= ( function() {
 	};
 	
 } ) ();
+
+///
+
+function tile(paper) {
+	widget.call(this);
+	
+	var brick = paper.rect(0, 0, 80, 60, 7);
+	brick.attr({
+		fill:"#BADA55",
+		stroke:"#ABC944",
+		strokeWidth:"2",
+		});
+	
+	var hb = paper.circle(70, 50, 7);
+	hb.attr({
+		fill:"#FFFFFF",
+		"fill-opacity":"0.4",
+		stroke:"#FFFFFF",
+		"stroke-opacity":"1.0",
+		strokeWidth: "2",
+		});
+						
+	this.widget_group = paper.group(brick, hb);
+						
+	this.text = "button";
+}
+
+tile.prototype = new widget();
+tile.prototype.constructor = tile;
+
+tile.prototype.getText = function()
+{
+	return this.text;
+}
+
+tile.prototype.setPos = function(x, y)
+{
+	var tMat = new Snap.Matrix();
+	tMat.translate(x, y);
+	this.widget_group.transform(tMat);
+}
 	
 ///
 
@@ -406,9 +447,9 @@ var dragdropmanager	= ( function() {
 //	//item["m_dragObj"] = new draggable();
 //}
 
-function makeWidget(item) {
-	item.m_widget = new widget(item);
-}
+//function makeWidget(item) {
+//	item.m_widget = new widget(item);
+//}
 
 ///
 	
@@ -597,10 +638,10 @@ Snap.plugin(function (Snap, Element, Paper, global) {
 							child = child.parent();
 						}						
 						
-						if(child.m_widget.m_dragObj === undefined)
-						{
-							child = child.parent();
-						}						
+						//if(child.m_widget.m_dragObj === undefined)
+						//{
+							//child = child.parent();
+						//}						
 					}
 					
 					if( null != child ) {

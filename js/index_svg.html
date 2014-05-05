@@ -121,44 +121,8 @@
 				paper.initMyZoom(mywidth, myheight);
 				
 				for(var iCnt=0; iCnt<3; iCnt++) {
-					var brick = paper.rect(0, 0, 80, 60, 7);
-					brick.attr({
-						fill:"#BADA55",
-						stroke:"#ABC944",
-						strokeWidth:"2",
-						});
-					
-					var hb = paper.circle(70, 50, 7);
-					hb.attr({
-						fill:"#FFFFFF",
-						"fill-opacity":"0.4",
-						stroke:"#FFFFFF",
-						"stroke-opacity":"1.0",
-						strokeWidth: "2",
-						});
-										
-					var tile = paper.group(brick, hb);
-					
-					//tile.animate({
-					//	transform:'r90, 40, 30'
-					//	}, 1000);
-						
-					//tile.drag();
-									
-					//var myMatrix = new Snap.Matrix();
-					//myMatrix.rotate(90, 140, 130);
-					//
-					//tile.animate({
-					//	transform:myMatrix
-					//	}, 10000, mina.linear);
-					
-					var tMat = new Snap.Matrix();
-					//tMat.translate(-40 + 0, -30 + iCnt*60);
-					tMat.translate(100 + 0, 100 + iCnt*120);
-					tile.transform(tMat);
-					
-					//tile.drag(onMove, onStart, onEnd);
-					makeWidget(tile);
+					var oTile = new tile(paper);
+					oTile.setPos(100 + 0, 100 + iCnt*180);
 				}
 			}
 		</script>
