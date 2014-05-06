@@ -363,7 +363,7 @@ var dragdropmanager	= ( function() {
 				
 				this.dropSrc = dropSrc;
 				this.dropObj = dropObj;
-				this.isEmpty = False;
+				this.isEmpty = false;
 				
 				//enableMouseMotion();				
 			},
@@ -420,7 +420,12 @@ function tile(paper) {
 		strokeWidth: "2",
 		});
 						
-	this.widget_group = paper.group(brick, hb);
+	// associate group of elements that make the widget
+	this.m_widgetgroup = paper.group(brick, hb);
+	this.m_widgetgroup.m_widget = this;
+	
+	// update draggable item
+	this.m_dragObj.item = this.m_widgetgroup;
 						
 	this.text = "button";
 }
@@ -437,7 +442,7 @@ tile.prototype.setPos = function(x, y)
 {
 	var tMat = new Snap.Matrix();
 	tMat.translate(x, y);
-	this.widget_group.transform(tMat);
+	this.m_widgetgroup.transform(tMat);
 }
 	
 ///
