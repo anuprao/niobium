@@ -109,21 +109,18 @@
 				paper.attr({
 					viewBox: "0 0 " + mywidth + " " + myheight,
 					});	
-				
-				//var layoutSpace = paper.rect(0, 0, 800, 600, 7);
-				//layoutSpace.attr({
-				//	fill:"#0088EE",
-				//	stroke:"none",
-				//	});
-										
-				//paper.zoomable();
-				//paper.panable();		
+					
 				paper.initMyZoom(mywidth, myheight);
+				
+				for(var iCnt=0; iCnt<4; iCnt++) {
+					var oTile = new tile(paper);
+					oTile.setPos(100 + 0, 100 + iCnt*90);
+				}
 				
 				for(var iCnt=0; iCnt<3; iCnt++) {
 					var oTile = new tile(paper);
-					oTile.setPos(100 + 0, 100 + iCnt*180);
-				}
+					oTile.setPos(300 + 0, 100 + iCnt*90);
+				}				
 			}
 		</script>
 		

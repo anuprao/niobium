@@ -322,6 +322,9 @@ function widget(item) {
 	this.bCanDrop = false;
 	
 	this.m_dragObj = new draggable(this.item);
+	
+	this.m_arrpChildren = [];
+	this.m_pParent = null;
 }
 
 widget.prototype.setPosForDrop = function (lx, ly) {	
@@ -337,6 +340,20 @@ widget.prototype.acceptDrop = function () {
 	var bDropSucceeded = false;
 	
 	return bDropSucceeded;
+}
+
+widget.prototype.setParent = function (parentWidget) {	
+	this.m_pParent = parentWidget;
+}
+
+widget.prototype.addChildWidget = function (child) {	
+	var nId = -1;
+	
+	this.m_arrpChildren.push(child);
+	nId = this.m_arrpChildren.length - 1;
+	child.setParent(this);
+
+	return nId;
 }
 
 /// DRAGGING
