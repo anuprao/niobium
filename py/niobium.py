@@ -1,29 +1,26 @@
-#!/usr/bin/python
-import math
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# niobium.py
+#
+# Copyright (c) 2017, Refer accompanying contributors.txt file for authors.
+# Refer accompanying LICENSE file for the applicable licensing terms.
+#
+
 import os
-
-import numpy
-from freetype import *
-
-from OpenGL.GL import *
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
-import pygame, pygame.image
-from pygame.locals import *
+from math import *
 
 #########################################################
 
-bUpdate = False
-
-bCTRLpressed = False
-
-#########################################################
-
-class dragdropmanager:
+class dragdropmanager(object):
 	
 	onlyInstance = None
 	
 	def __init__(self):
+		
+		self.enableMouseMotionCb = None
+		self.disableMouseMotionCb = None
+		
 		self.isEmpty = True
 		self.dropSrc = None
 		self.dropObj = None
@@ -35,26 +32,30 @@ class dragdropmanager:
 		return dragdropmanager.onlyInstance
 		
 	def attachObject(self, dropSrc, dropObj):
-		
-		dropObj.show(False)
+		print("attach for drop")
+		# TODO: Set state of dropObj to indicate it in flight
+		#dropObj.show(False)
 		
 		self.dropSrc = dropSrc
 		self.dropObj = dropObj
 		self.isEmpty = False
 		
-		enableMouseMotion()
+		if None != self.enableMouseMotionCb:
+			self.enableMouseMotionCb()
 	
 	def clearOnDrop(self):
+		print("cleared on drop")
 		self.isEmpty = True
 		self.dropSrc = None
 		self.dropObj = None
 		
-		disableMouseMotion()
+		if None != self.disableMouseMotionCb:
+			self.disableMouseMotionCb()
 		
 	def setPosForDrop(self, lx, ly):
-		self.dropObj.setPosForDrop(lx-self.dropObj.dragpad_OffX, ly-self.dropObj.dragpad_OffY)
+		self.dropObj.setPosForDrop(lx, ly)
 	
-class draggable:
+class draggable(object):
 	def __init__(self, parent):
 		self.bDragging = False
 		
@@ -71,15 +72,20 @@ class draggable:
 		self.m_dropx = mx - self.draglocal_OffX 
 		self.m_dropy = my - self.draglocal_OffY 
 		
+		print("set drop location", self.m_dropx, self.m_dropy)
+		
 	def startDrag(self, mx, my):		
-		print "drag mode on"
+		print("start drag")
 		
 		self.bDragging = True
-		self.draglocal_OffX, self.draglocal_OffY = mx, my	
+		
+		self.draglocal_OffX = mx
+		self.draglocal_OffY = my
+			
 		self.setDropLocation(mx, my)
 		
 	def stopDrag(self):
-		print "drag mode off"
+		print("stop drag")
 		
 		bReturn = False
 		
@@ -94,13 +100,29 @@ class draggable:
 		
 		return bReturn
 
-class selection:
+class selectable(object):
 	def __init__(self, parent):
+		self.bSelected = False
+		
+	def isSelected(self):
+		return self.bSelected
+		
+class selection(object):
+	def __init__(self, parent, enableMouseMotionCb=None, disableMouseMotionCb=None):
+		
+		self.enableMouseMotionCb = enableMouseMotionCb
+		self.disableMouseMotionCb = disableMouseMotionCb
+		
 		self.parent = parent
 		
-		self.clear()
+		self.arrItems = []
 		
 	def clear(self):
+		print("clearing selection")
+		
+		for item in self.arrItems:
+			item.m_selObj.bSelected = False
+			
 		self.arrItems = []
 		
 	def isEmpty(self):
@@ -110,16 +132,27 @@ class selection:
 		return bReturn
 		
 	def addItem(self, item):
+		print("adding item to selection @",len(self.arrItems))
 		self.arrItems.append(item)
+		item.m_selObj.bSelected = True
+		
+	def removeItem(self, item):
+		print("removing item from selection")
+		self.arrItems.remove(item)
+		item.m_selObj.bSelected = False
+		
+	def containsItem(self, item):
+		bReturn = False
+		
+		if item in self.arrItems:
+			bReturn = True
+		
+		return bReturn
 		
 	def containsPoint(self, lx, ly):
 		bReturn = False
 		
 		for item in self.arrItems:
-			#print "testing", item.name
-			#print lx, ly
-			#print item.m_x, item.m_y
-			#print item.m_x + item.m_w , item.m_y + item.m_h
 			if (lx >= item.m_x) and (lx <= item.m_x + item.m_w ) and (ly >= item.m_y) and (ly <= item.m_y + item.m_h) :
 				bReturn = bReturn or True
 		
@@ -127,21 +160,46 @@ class selection:
 		
 	def setDropLocation(self, mx, my):
 		for item in self.arrItems:
-			item.setDropLocation(mx, my)
+			#item.setDropLocation(mx, my)
+			
+			parent = item.parent
+			if None == parent:
+				item.setDropLocation(mx, my)
+			else:
+				if parent not in self.arrItems:
+					item.setDropLocation(mx, my)			
 		
 	def startDrag(self, mx, my):
-		for item in self.arrItems:		
-			item.startDrag(mx, my)
+		for item in self.arrItems:	
+			
+			#item.startDrag(mx, my)
+			
+			parent = item.parent
+			if None == parent:
+				item.startDrag(mx, my)
+			else:
+				if parent not in self.arrItems:
+					item.startDrag(mx, my)
 		
-		enableMouseMotion()
+		if None != self.enableMouseMotionCb:
+			self.enableMouseMotionCb()
 		
 	def stopDrag(self):		
 		bReturn = False
 		
 		for item in self.arrItems:		
-			bReturn = bReturn or item.stopDrag()
 			
-		disableMouseMotion()
+			#bReturn = bReturn or item.stopDrag()
+			
+			parent = item.parent
+			if None == parent:
+				bReturn = bReturn or item.stopDrag()
+			else:
+				if parent not in self.arrItems:
+					bReturn = bReturn or item.stopDrag()			
+			
+		if None != self.disableMouseMotionCb:
+			self.disableMouseMotionCb()
 		
 		return bReturn
 		
@@ -152,8 +210,50 @@ class selection:
 			bReturn = bReturn or item.isUnderDrag()
 		
 		return bReturn
+	
+class panable(object):
+	def __init__(self, parent, enableMouseMotionCb=None, disableMouseMotionCb=None):
+		
+		self.enableMouseMotionCb = enableMouseMotionCb
+		self.disableMouseMotionCb = disableMouseMotionCb
+				
+		self.bPanning = False
+		
+		self.panlocal_OffX = 0
+		self.panlocal_OffY = 0		
+		
+	def isUnderPan(self):
+		return self.bPanning
+				
+	def startPan(self, mx, my):	
+		print("pan mode on")	
 
-class zoomable:
+		self.bPanning = True
+			
+		self.panlocal_OffX = mx
+		self.panlocal_OffY = my	
+		
+		if None != self.enableMouseMotionCb:
+			self.enableMouseMotionCb()
+			
+	def stopPan(self):
+		print("pan mode off")
+		
+		self.panlocal_OffX = 0
+		self.panlocal_OffY = 0	
+				
+		self.bPanning = False
+		
+		if None != self.disableMouseMotionCb:
+			self.disableMouseMotionCb()
+			
+	def updatePan(self, mx, my):
+		nx = mx - self.panlocal_OffX
+		ny = my - self.panlocal_OffY
+		
+		return nx,ny
+		
+class zoomable(object):
 	def __init__(self, parent):
 		self.bZooming = False
 				
@@ -172,16 +272,15 @@ class zoomable:
 		nw, nh = w, h
 		
 		if True == self.bZoomV:
-			#nh = h*self.zoomlevel	
-			nh = h/self.zoomlevel	
+			nh = h/self.zoomlevel		
 		
 		if True == self.bZoomH:
-			#nw = w*self.zoomlevel
 			nw = w/self.zoomlevel
 		
-		return nw, nh
+		return (nw, nh)
 		
 	def resetZoomlevel(self):
+		print("[1]")
 		self.zoomlevel = self.zoomRESET
 		self.prev_zoomlevel = self.zoomlevel	
 		
@@ -191,100 +290,22 @@ class zoomable:
 			
 		if self.zoomlevel < self.zoomMIN:
 			self.zoomlevel = self.zoomMIN
-			
-		#self.zoomlevel = round(self.zoomlevel,2)	
 		
 	def increaseZoomlevel(self):
-		print "Z+"
+		print("[+]")
 		self.prev_zoomlevel = self.zoomlevel
 		
 		if self.zoomlevel >= self.zoomMIN and self.zoomlevel < self.zoomMAX:	
-			self.zoomlevel = self.zoomlevel * 2.0
+			self.zoomlevel = self.zoomlevel * 1.2
 		
 		self.normalizeZoomlevel()
 		
 	def decreaseZoomlevel(self):
-		print "Z-"
+		print("[-]")
 		self.prev_zoomlevel = self.zoomlevel
 		
 		if self.zoomlevel > self.zoomMIN and self.zoomlevel <= self.zoomMAX:	
-			self.zoomlevel = self.zoomlevel * 0.5
+			self.zoomlevel = self.zoomlevel / 1.2
 				
 		self.normalizeZoomlevel()	
-	
-class panable:
-	def __init__(self, parent):
-		self.bPanning = False
-		
-		self.panDropLeft = 0
-		self.panDropRight = 0
-		self.panDropTop = 0
-		self.panDropBottom = 0
-		
-		self.panlocal_OffX = 0
-		self.panlocal_OffY = 0	
-		
-	def isUnderPan(self):
-		return self.bPanning
-		
-	def startPan(self, cleft, cright, ctop, cbottom, mx, my):	
-		print "pan mode on"	
-
-		self.bPanning = True
-		
-		self.panDropLeft = cleft
-		self.panDropRight = cright
-		self.panDropTop = ctop
-		self.panDropBottom = cbottom
-			
-		self.panlocal_OffX = mx
-		self.panlocal_OffY = my	
-		
-		enableMouseMotion()
-		
-	def stopPan(self):
-		print "pan mode off"
-		
-		bReturn = False
-		
-		self.cleft = self.panDropLeft
-		self.cright = self.panDropRight
-		self.ctop = self.panDropTop
-		self.cbottom = self.panDropBottom
-		
-		self.bPanning = False
-		
-		if self.panDropLeft != self.panDropRight and self.panDropTop != self.panDropBottom :
-			
-			if self.cleft != self.panDropLeft or self.cright != self.panDropRight or self.ctop != self.panDropTop or self.cbottom != self.panDropBottom:
-			
-				bReturn = True	
-		
-		disableMouseMotion()
-		
-		return bReturn
-		
-	def setPanExtents(self, l, r, t, b):
-		self.cleft = l
-		self.cright = r
-		self.ctop = t
-		self.cbottom = b
-		
-	def updatePanExtents(self, mx, my, w, h):
-		nx = mx - self.panlocal_OffX
-		ny = my - self.panlocal_OffY
-		
-		tmpLeft = self.cleft - nx 
-		tmpRight = tmpLeft + w
-		tmpTop = self.ctop - ny
-		tmpBottom = tmpTop + h
-		
-		if tmpLeft != tmpRight and tmpTop != tmpBottom:
-			self.panDropLeft = tmpLeft
-			self.panDropRight = tmpRight
-			self.panDropTop = tmpTop
-			self.panDropBottom = tmpBottom
-		
-	def getPanExtents(self):
-		return self.cleft, self.cright, self.ctop, self.cbottom
 		

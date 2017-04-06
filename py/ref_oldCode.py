@@ -1749,12 +1749,12 @@ def setup():
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)	
 	
-	pthfontRegular = 'Play-Regular.ttf'
+	pthfontRegular = 'NotoSans-Bold.ttf'
 
 	ftRegular = customfont(pthfontRegular, 14)
 	ftRegular.makefont()
 
-	pthfontBold = 'Play-Bold.ttf'
+	pthfontBold = 'NotoSans-Bold.ttf'
 
 	ftBold = customfont(pthfontBold, 32)
 	ftBold.makefont()	
