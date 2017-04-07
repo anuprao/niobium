@@ -72,7 +72,7 @@ class draggable(object):
 		self.m_dropx = mx - self.draglocal_OffX 
 		self.m_dropy = my - self.draglocal_OffY 
 		
-		print("set drop location", self.m_dropx, self.m_dropy)
+		#print("set drop location", self.m_dropx, self.m_dropy)
 		
 	def startDrag(self, mx, my):		
 		print("start drag")
@@ -121,7 +121,7 @@ class selection(object):
 		print("clearing selection")
 		
 		for item in self.arrItems:
-			item.m_selObj.bSelected = False
+			item.m_Selection.bSelected = False
 			
 		self.arrItems = []
 		
@@ -134,12 +134,12 @@ class selection(object):
 	def addItem(self, item):
 		print("adding item to selection @",len(self.arrItems))
 		self.arrItems.append(item)
-		item.m_selObj.bSelected = True
+		item.m_Selection.bSelected = True
 		
 	def removeItem(self, item):
 		print("removing item from selection")
 		self.arrItems.remove(item)
-		item.m_selObj.bSelected = False
+		item.m_Selection.bSelected = False
 		
 	def containsItem(self, item):
 		bReturn = False
@@ -220,18 +220,27 @@ class panable(object):
 		self.bPanning = False
 		
 		self.panlocal_OffX = 0
-		self.panlocal_OffY = 0		
+		self.panlocal_OffY = 0	
+		
+		self.m_panx = 0	
+		self.m_pany = 0
 		
 	def isUnderPan(self):
 		return self.bPanning
-				
+		
+	def resetPan(self, mx, my):	
+		self.panlocal_OffX = mx
+		self.panlocal_OffY = my	
+		
 	def startPan(self, mx, my):	
 		print("pan mode on")	
 
 		self.bPanning = True
 			
-		self.panlocal_OffX = mx
-		self.panlocal_OffY = my	
+		self.resetPan(mx, my)
+		
+		self.m_panx = 0
+		self.m_pany = 0
 		
 		if None != self.enableMouseMotionCb:
 			self.enableMouseMotionCb()
@@ -241,17 +250,72 @@ class panable(object):
 		
 		self.panlocal_OffX = 0
 		self.panlocal_OffY = 0	
-				
+		
+		self.m_panx = 0
+		self.m_pany = 0
+		
 		self.bPanning = False
 		
 		if None != self.disableMouseMotionCb:
 			self.disableMouseMotionCb()
 			
 	def updatePan(self, mx, my):
-		nx = mx - self.panlocal_OffX
-		ny = my - self.panlocal_OffY
+		self.m_panx = (mx - self.panlocal_OffX)
+		self.m_pany = (my - self.panlocal_OffY)	
 		
-		return nx,ny
+		return 	self.m_panx, self.m_pany
+		
+class trackable(object):
+	def __init__(self, parent, enableMouseMotionCb=None, disableMouseMotionCb=None):
+		
+		self.enableMouseMotionCb = enableMouseMotionCb
+		self.disableMouseMotionCb = disableMouseMotionCb
+				
+		self.bTracking = False
+		
+		self.anchorX = 0
+		self.anchorY = 0	
+		
+		self.trackX = 0	
+		self.trackY = 0
+		
+	def isUnderTrack(self):
+		return self.bTracking
+		
+	def resetTrack(self, mx, my):	
+		self.anchorX = mx
+		self.anchorY = my	
+		
+	def startTrack(self, mx, my):	
+		print("track mode on")	
+
+		self.bTracking = True
+			
+		self.resetTrack(mx, my)
+		
+		self.trackX = mx
+		self.trackY = my
+		
+		if None != self.enableMouseMotionCb:
+			self.enableMouseMotionCb()
+			
+	def stopTrack(self):
+		print("track mode off")
+		
+		self.anchorX = 0
+		self.anchorY = 0	
+		
+		self.trackX = 0
+		self.trackY = 0
+		
+		self.bTracking = False
+		
+		if None != self.disableMouseMotionCb:
+			self.disableMouseMotionCb()
+			
+	def updateTrack(self, mx, my):
+		self.trackX = mx
+		self.trackY = my
 		
 class zoomable(object):
 	def __init__(self, parent):
